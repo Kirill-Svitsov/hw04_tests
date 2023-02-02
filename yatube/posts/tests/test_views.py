@@ -85,7 +85,8 @@ class PostViewsTests(TestCase):
     def test_group_list_pages_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
         response = (self.authorized_client.
-                    get(reverse('posts:group_list', kwargs={'slug': 'test_slug'})))
+                    get(reverse('posts:group_list',
+                                kwargs={'slug': 'test_slug'})))
         self.assertEqual(response.context.get('group').title,
                          PostViewsTests.group.title)
         self.assertEqual(response.context.get('group').description,
