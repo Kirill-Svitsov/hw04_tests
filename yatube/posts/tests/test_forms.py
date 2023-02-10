@@ -77,8 +77,10 @@ class PostCreateFormTests(TestCase):
             'text': 'Текст',
             'group': self.group.pk,
         }
-        # Лишний запрос - пост можно создать при помощи ORM - к сожалению не понял каким образом реализовать
-        # И в спешке был вынужден отправить такую версию кода, тк смогу внести корректировки не скоро
+        # Лишний запрос - пост можно создать при помощи
+        # ORM - к сожалению не понял каким образом реализовать
+        # И в спешке был вынужден отправить такую
+        # версию кода, тк смогу внести корректировки не скоро
         self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
@@ -107,5 +109,3 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(response_edit.status_code, HTTPStatus.OK)
         self.assertEqual(post_edit.text, 'Новый текст')
         self.assertEqual(post_edit.group, self.group)
-
-

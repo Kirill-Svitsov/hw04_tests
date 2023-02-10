@@ -63,7 +63,7 @@ class PostURLTests(TestCase):
                 response = self.client.get(address)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
-    def test_post_edit_url_and_post_create_url_exists_at_desired_location(self):
+    def test_post_edit_and_create_url_exists_at_desired_location(self):
         """
             Страницы posts/<int:post_id>/edit/, create/ доступны
             авторизованному пользователю.
@@ -76,4 +76,3 @@ class PostURLTests(TestCase):
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
-
