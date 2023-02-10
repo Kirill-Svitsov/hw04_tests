@@ -2,8 +2,10 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from ..models import Group, Post
+from .test_views import TEXT_ONE, FIRST_TITLE, SLUG, DESCRIPTION
 
 User = get_user_model()
+NUM_OF_WORDS = 15
 
 
 # python3 manage.py test posts.tests.test_models для запуска локальных тестов
@@ -13,19 +15,19 @@ class PostModelTest(TestCase):
         super().setUpClass()
         cls.user = User.objects.create_user(username='auth')
         cls.group = Group.objects.create(
-            title='Тестовая группа',
-            slug='test_slug',
-            description='Тестовое описание',
+            title=FIRST_TITLE,
+            slug=SLUG,
+            description=DESCRIPTION,
         )
         cls.post = Post.objects.create(
             author=cls.user,
-            text='Тестовый пост с очень большим и бессмысленным текстом',
+            text=TEXT_ONE,
         )
 
     def test_models_have_correct_object_names(self):
         """Проверяем, что у моделей корректно работает __str__."""
         fields_post_group = {
-            self.post.text[:15]: str(self.post),
+            self.post.text[:NUM_OF_WORDS]: str(self.post),
             self.group.title: str(self.group)
         }
         for key, value in fields_post_group.items():

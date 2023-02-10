@@ -4,9 +4,17 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from ..models import Group, Post
+from ..views import num_of_pub
 
 User = get_user_model()
-PAGE_POSTS_COUNT = 10
+TEXT_ONE = 'Текст поста один'
+TEXT_TWO = 'Текст поста два'
+FIRST_TITLE = 'Тестовая группа'
+SECOND_TITLE = 'Вторая группа'
+SLUG = 'test_slug'
+SECOND_SLUG = 'test_slug_second'
+DESCRIPTION = 'Тестовое описание'
+SECOND_DESCRIPTION = 'Тестовое описание 2'
 
 
 # python3 manage.py test posts.tests.test_views для запуска локальных тестов
@@ -18,30 +26,29 @@ class PostViewsTests(TestCase):
         cls.user = User.objects.create_user(username='HasNoName')
         cls.second_user = User.objects.create(username='Second_User')
         cls.group = Group.objects.create(
-            title='Тестовая группа',
-            slug='test_slug',
-            description='Тестовое описание',
+            title=FIRST_TITLE,
+            slug=SLUG,
+            description=DESCRIPTION,
         )
         cls.second_group = Group.objects.create(
-            title='Вторая группа',
-            slug='test_slug_second',
-            description='Тестовое описание 2'
+            title=SECOND_TITLE,
+            slug=SECOND_SLUG,
+            description=SECOND_DESCRIPTION
         )
         for post in range(13):
             cls.post = Post.objects.create(
-                text='Записи первой группы',
+                text=TEXT_ONE,
                 author=cls.user,
                 group=cls.group
             )
         for post in range(2):
             cls.post = Post.objects.create(
-                text='Записи второй группы',
+                text=TEXT_TWO,
                 author=cls.second_user,
                 group=cls.second_group
             )
 
     def setUp(self):
-        self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
         self.authorized_client.force_login(self.second_user)
@@ -84,15 +91,13 @@ class PostViewsTests(TestCase):
 
     def test_group_list_pages_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
-        response = (self.authorized_client.
-                    get(reverse('posts:group_list',
-                                kwargs={'slug': 'test_slug'})))
-        self.assertEqual(response.context.get('group').title,
-                         PostViewsTests.group.title)
-        self.assertEqual(response.context.get('group').description,
-                         PostViewsTests.group.description)
-        self.assertEqual(response.context.get('group').slug,
-                         PostViewsTests.group.slug)
+        response = self.authorized_client.get(
+            reverse('posts:group_list', kwargs={'slug': self.group.slug})
+        )
+        post_group_list = list(Post.objects.filter(
+            group_id=self.group.id
+        )[:10])
+        self.assertEqual(list(response.context['page_obj']), post_group_list)
 
     def test_profile_page_show_correct_context(self):
         """Шаблон profile сформирован с правильным контекстом."""
@@ -124,21 +129,21 @@ class PostViewsTests(TestCase):
                 self.assertIsInstance(form_field, expected)
 
     def test_paginator_first_page_contains_ten_records(self):
-        response = self.guest_client.get(reverse('posts:index'))
-        self.assertEqual(len(response.context['page_obj']), PAGE_POSTS_COUNT)
+        response = self.client.get(reverse('posts:index'))
+        self.assertEqual(len(response.context['page_obj']), num_of_pub)
 
     def test_paginator_second_page_contains_five_records(self):
-        response = self.guest_client.get(reverse('posts:index') + '?page=2')
+        response = self.client.get(reverse('posts:index') + '?page=2')
         self.assertEqual(len(response.context['page_obj']), 5)
 
     def test_paginator_group_list_contains_two_records(self):
-        response = self.guest_client.get(
+        response = self.client.get(
             reverse('posts:group_list', kwargs={'slug': 'test_slug_second'})
         )
         self.assertEqual(len(response.context['page_obj']), 2)
 
     def test_paginator_profile_contains_two_records(self):
-        response = self.guest_client.get(
+        response = self.client.get(
             reverse('posts:profile', kwargs={'username': 'Second_User'})
         )
         self.assertEqual(len(response.context['page_obj']), 2)
