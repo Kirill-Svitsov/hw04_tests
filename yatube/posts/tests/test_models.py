@@ -1,11 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ..models import Group, Post
+from ..models import Group, Post, NUM_OF_WORDS
 from .test_views import TEXT_ONE, FIRST_TITLE, SLUG, DESCRIPTION
 
 User = get_user_model()
-NUM_OF_WORDS = 15
 
 
 # python3 manage.py test posts.tests.test_models для запуска локальных тестов

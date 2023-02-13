@@ -34,7 +34,7 @@ class PostURLTests(TestCase):
         """URL-адрес использует соответствующий шаблон."""
         templates_url_names = {
             '/': 'posts/index.html',
-            '/group/test_slug/': 'posts/group_list.html',
+            f'/group/{SLUG}/': 'posts/group_list.html',
             '/profile/HasNoName/': 'posts/profile.html',
             f'/posts/{self.post.pk}/': 'posts/post_detail.html',
             f'/posts/{self.post.pk}/edit/': 'posts/create_post.html',
@@ -54,7 +54,7 @@ class PostURLTests(TestCase):
         """Страницы доступные всем пользователям."""
         url = {
             "/",
-            "/group/test_slug/",
+            f"/group/{SLUG}/",
             "/profile/HasNoName/",
             f"/posts/{self.post.pk}/",
         }

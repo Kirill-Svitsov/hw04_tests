@@ -50,7 +50,6 @@ class PostViewsTests(TestCase):
 
     def setUp(self):
         self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
         self.authorized_client.force_login(self.second_user)
 
     def test_pages_uses_correct_template(self):
