@@ -35,7 +35,7 @@ class PostURLTests(TestCase):
         templates_url_names = {
             '/': 'posts/index.html',
             f'/group/{SLUG}/': 'posts/group_list.html',
-            '/profile/HasNoName/': 'posts/profile.html',
+            f'/profile/{self.user}/': 'posts/profile.html',
             f'/posts/{self.post.pk}/': 'posts/post_detail.html',
             f'/posts/{self.post.pk}/edit/': 'posts/create_post.html',
             '/create/': 'posts/create_post.html',
@@ -55,7 +55,7 @@ class PostURLTests(TestCase):
         url = {
             "/",
             f"/group/{SLUG}/",
-            "/profile/HasNoName/",
+            f"/profile/{self.user}/",
             f"/posts/{self.post.pk}/",
         }
         for address in url:

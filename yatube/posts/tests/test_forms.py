@@ -34,15 +34,20 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         """Валидная форма создает запись"""
-        Post.objects.all().delete()
+        # считаем количество записей в БД
         posts_count = Post.objects.count()
-        self.assertEqual(Post.objects.count(), 0)
+        # Заполняем форму для записи в БД
         form_data = {'text': 'Текст поста',
                      'group': self.group.id}
+        # Отправляем запись в БД
         response = self.authorized_client.post(reverse('posts:post_create'),
                                                data=form_data,
                                                follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+        # Проверяем редирект на страницу пользователя после отправки формы
+        self.assertRedirects(response,
+                             reverse('posts:profile', kwargs={'username': 'HasNoName'})
+                             )
+        # Проверяем, увеличилось ли число постов
         self.assertEqual(Post.objects.count(),
                          posts_count + 1,
                          )
@@ -66,21 +71,27 @@ class PostCreateFormTests(TestCase):
 
     def test_authorized_edit_post(self):
         """Редактирование записи автором поста"""
+        # Считаем количество постов в базе
+        post_count = Post.objects.count()
+        # Заполняем форму
         form_data = {'text': 'Текст записанный в форму',
                      'group': self.group.pk}
-        post_count = Post.objects.count()
-        self.assertEqual(Post.objects.count(), 1)
+        # Отправляем форму
         response = self.authorized_client.post(
             reverse('posts:post_edit', args=(self.post.id,)),
             data=form_data,
             follow=True)
-        post = Post.objects.first()
+        # Проверяем, что новая запись не создалась
         self.assertEqual(Post.objects.count(), post_count)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+        # Проверяем редирект на страницу post_detail после редактирования
+        self.assertRedirects(response,
+                             reverse('posts:post_detail', args=(self.post.pk,))
+                             )
+        # Получаем для проверки объект поста из БД
+        post = Post.objects.get(pk=1)
+        # Проверяем автора
         self.assertEqual(post.author, self.post.author)
+        # Проверяем изменился ли текст записи
         self.assertEqual(post.text, form_data['text'])
+        # Проверяем сохранилась ли группа записи
         self.assertEqual(post.group.pk, form_data['group'])
-        self.assertEqual(Post.objects.count(), post_count)
-        response_group = self.authorized_client.get(reverse(
-            'posts:group_list', args=(self.group.slug,)))
-        self.assertEqual(len(response_group.context['page_obj']), 1)
