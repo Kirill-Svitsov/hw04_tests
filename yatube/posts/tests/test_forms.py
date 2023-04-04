@@ -45,7 +45,8 @@ class PostCreateFormTests(TestCase):
                                                follow=True)
         # Проверяем редирект на страницу пользователя после отправки формы
         self.assertRedirects(response,
-                             reverse('posts:profile', kwargs={'username': 'HasNoName'})
+                             reverse('posts:profile',
+                                     kwargs={'username': 'HasNoName'})
                              )
         # Проверяем, увеличилось ли число постов
         self.assertEqual(Post.objects.count(),
