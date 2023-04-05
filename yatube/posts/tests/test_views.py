@@ -17,6 +17,12 @@ DESCRIPTION = 'Тестовое описание'
 SECOND_DESCRIPTION = 'Тестовое описание 2'
 USER_ONE = 'HasNoName'
 USER_TWO = 'Second_User'
+POSTS_OF_FIRST_AUTHOR = 13
+POSTS_OF_SECOND_AUTHOR = 2
+POST_ID_ONE = 13
+POST_ID_TWO = 14
+POSTS_PAGINATOR_SECOND_PAGE = 5
+POSTS_OF_GROUP_PAGE = 2
 
 
 # python3 manage.py test posts.tests.test_views для запуска локальных тестов
@@ -37,13 +43,13 @@ class PostViewsTests(TestCase):
             slug=SECOND_SLUG,
             description=SECOND_DESCRIPTION
         )
-        for post in range(13):
+        for post in range(POSTS_OF_FIRST_AUTHOR):
             cls.post = Post.objects.create(
                 text=TEXT_ONE,
                 author=cls.user,
                 group=cls.group
             )
-        for post in range(2):
+        for post in range(POSTS_OF_SECOND_AUTHOR):
             cls.post = Post.objects.create(
                 text=TEXT_TWO,
                 author=cls.second_user,
@@ -61,10 +67,10 @@ class PostViewsTests(TestCase):
             reverse('posts:profile',
                     kwargs={'username': USER_TWO}): 'posts/profile.html',
             reverse('posts:post_detail',
-                    kwargs={'post_id': 13}): 'posts/post_detail.html',
+                    kwargs={'post_id': POST_ID_ONE}): 'posts/post_detail.html',
             reverse('posts:post_create'): 'posts/create_post.html',
             reverse('posts:post_edit',
-                    kwargs={'post_id': 14}): 'posts/create_post.html',
+                    kwargs={'post_id': POST_ID_TWO}): 'posts/create_post.html',
             reverse('posts:group_list',
                     kwargs={'slug': 'test_slug'}): 'posts/group_list.html',
         }
@@ -107,7 +113,7 @@ class PostViewsTests(TestCase):
         first_post = response.context['page_obj'][0]
         post_author_0 = first_post.author
         self.assertEqual(post_author_0, PostViewsTests.post.author)
-        self.assertEqual(len(response.context['page_obj']), 2)
+        self.assertEqual(len(response.context['page_obj']), POSTS_OF_SECOND_AUTHOR)
 
     def test_post_detail_page_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
@@ -135,16 +141,16 @@ class PostViewsTests(TestCase):
 
     def test_paginator_second_page_contains_five_records(self):
         response = self.client.get(reverse('posts:index') + '?page=2')
-        self.assertEqual(len(response.context['page_obj']), 5)
+        self.assertEqual(len(response.context['page_obj']), POSTS_PAGINATOR_SECOND_PAGE)
 
     def test_paginator_group_list_contains_two_records(self):
         response = self.client.get(
             reverse('posts:group_list', kwargs={'slug': 'test_slug_second'})
         )
-        self.assertEqual(len(response.context['page_obj']), 2)
+        self.assertEqual(len(response.context['page_obj']), POSTS_OF_GROUP_PAGE)
 
     def test_paginator_profile_contains_two_records(self):
         response = self.client.get(
             reverse('posts:profile', kwargs={'username': USER_TWO})
         )
-        self.assertEqual(len(response.context['page_obj']), 2)
+        self.assertEqual(len(response.context['page_obj']), POSTS_OF_SECOND_AUTHOR)
