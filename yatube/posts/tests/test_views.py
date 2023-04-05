@@ -113,7 +113,10 @@ class PostViewsTests(TestCase):
         first_post = response.context['page_obj'][0]
         post_author_0 = first_post.author
         self.assertEqual(post_author_0, PostViewsTests.post.author)
-        self.assertEqual(len(response.context['page_obj']), POSTS_OF_SECOND_AUTHOR)
+        self.assertEqual(
+            len(response.context['page_obj']),
+            POSTS_OF_SECOND_AUTHOR
+        )
 
     def test_post_detail_page_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
@@ -141,16 +144,25 @@ class PostViewsTests(TestCase):
 
     def test_paginator_second_page_contains_five_records(self):
         response = self.client.get(reverse('posts:index') + '?page=2')
-        self.assertEqual(len(response.context['page_obj']), POSTS_PAGINATOR_SECOND_PAGE)
+        self.assertEqual(
+            len(response.context['page_obj']),
+            POSTS_PAGINATOR_SECOND_PAGE
+        )
 
     def test_paginator_group_list_contains_two_records(self):
         response = self.client.get(
             reverse('posts:group_list', kwargs={'slug': 'test_slug_second'})
         )
-        self.assertEqual(len(response.context['page_obj']), POSTS_OF_GROUP_PAGE)
+        self.assertEqual(
+            len(response.context['page_obj']),
+            POSTS_OF_GROUP_PAGE
+        )
 
     def test_paginator_profile_contains_two_records(self):
         response = self.client.get(
             reverse('posts:profile', kwargs={'username': USER_TWO})
         )
-        self.assertEqual(len(response.context['page_obj']), POSTS_OF_SECOND_AUTHOR)
+        self.assertEqual(
+            len(response.context['page_obj']),
+            POSTS_OF_SECOND_AUTHOR
+        )
