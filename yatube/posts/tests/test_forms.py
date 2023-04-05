@@ -5,7 +5,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from ..models import Group, Post, User
-from .test_views import TEXT_ONE, FIRST_TITLE, SLUG, DESCRIPTION
+from .test_views import TEXT_ONE, FIRST_TITLE, SLUG, DESCRIPTION, USER_ONE
 
 User = get_user_model()
 
@@ -16,7 +16,7 @@ class PostCreateFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='HasNoName')
+        cls.user = User.objects.create_user(username=USER_ONE)
         cls.group = Group.objects.create(
             title=FIRST_TITLE,
             slug=SLUG,
@@ -46,7 +46,7 @@ class PostCreateFormTests(TestCase):
         # Проверяем редирект на страницу пользователя после отправки формы
         self.assertRedirects(response,
                              reverse('posts:profile',
-                                     kwargs={'username': 'HasNoName'})
+                                     kwargs={'username': USER_ONE})
                              )
         # Проверяем, увеличилось ли число постов
         self.assertEqual(Post.objects.count(),

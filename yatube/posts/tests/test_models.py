@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from ..models import Group, Post, NUM_OF_WORDS
-from .test_views import TEXT_ONE, FIRST_TITLE, SLUG, DESCRIPTION
+from .test_views import TEXT_ONE, FIRST_TITLE, SLUG, DESCRIPTION, USER_ONE
 
 User = get_user_model()
 
@@ -12,7 +12,7 @@ class PostModelTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='auth')
+        cls.user = User.objects.create_user(username=USER_ONE)
         cls.group = Group.objects.create(
             title=FIRST_TITLE,
             slug=SLUG,

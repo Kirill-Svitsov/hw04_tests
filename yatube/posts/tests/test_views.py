@@ -15,6 +15,8 @@ SLUG = 'test_slug'
 SECOND_SLUG = 'test_slug_second'
 DESCRIPTION = 'Тестовое описание'
 SECOND_DESCRIPTION = 'Тестовое описание 2'
+USER_ONE = 'HasNoName'
+USER_TWO = 'Second_User'
 
 
 # python3 manage.py test posts.tests.test_views для запуска локальных тестов
@@ -23,8 +25,8 @@ class PostViewsTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='HasNoName')
-        cls.second_user = User.objects.create(username='Second_User')
+        cls.user = User.objects.create_user(username=USER_ONE)
+        cls.second_user = User.objects.create(username=USER_TWO)
         cls.group = Group.objects.create(
             title=FIRST_TITLE,
             slug=SLUG,
@@ -57,7 +59,7 @@ class PostViewsTests(TestCase):
         templates_pages_names = {
             reverse('posts:index'): 'posts/index.html',
             reverse('posts:profile',
-                    kwargs={'username': 'Second_User'}): 'posts/profile.html',
+                    kwargs={'username': USER_TWO}): 'posts/profile.html',
             reverse('posts:post_detail',
                     kwargs={'post_id': 13}): 'posts/post_detail.html',
             reverse('posts:post_create'): 'posts/create_post.html',
@@ -101,7 +103,7 @@ class PostViewsTests(TestCase):
     def test_profile_page_show_correct_context(self):
         """Шаблон profile сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse(
-            'posts:profile', kwargs={'username': 'Second_User'}))
+            'posts:profile', kwargs={'username': USER_TWO}))
         first_post = response.context['page_obj'][0]
         post_author_0 = first_post.author
         self.assertEqual(post_author_0, PostViewsTests.post.author)
@@ -143,6 +145,6 @@ class PostViewsTests(TestCase):
 
     def test_paginator_profile_contains_two_records(self):
         response = self.client.get(
-            reverse('posts:profile', kwargs={'username': 'Second_User'})
+            reverse('posts:profile', kwargs={'username': USER_TWO})
         )
         self.assertEqual(len(response.context['page_obj']), 2)
