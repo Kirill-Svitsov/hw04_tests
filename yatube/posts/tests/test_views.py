@@ -19,8 +19,6 @@ USER_ONE = 'HasNoName'
 USER_TWO = 'Second_User'
 POSTS_OF_FIRST_AUTHOR = 13
 POSTS_OF_SECOND_AUTHOR = 2
-POST_ID_ONE = 13
-POST_ID_TWO = 14
 POSTS_PAGINATOR_SECOND_PAGE = 5
 POSTS_OF_GROUP_PAGE = 2
 
@@ -67,12 +65,12 @@ class PostViewsTests(TestCase):
             reverse('posts:profile',
                     kwargs={'username': USER_TWO}): 'posts/profile.html',
             reverse('posts:post_detail',
-                    kwargs={'post_id': POST_ID_ONE}): 'posts/post_detail.html',
+                    kwargs={'post_id': self.post.id}): 'posts/post_detail.html',
             reverse('posts:post_create'): 'posts/create_post.html',
             reverse('posts:post_edit',
-                    kwargs={'post_id': POST_ID_TWO}): 'posts/create_post.html',
+                    kwargs={'post_id': self.post.id}): 'posts/create_post.html',
             reverse('posts:group_list',
-                    kwargs={'slug': 'test_slug'}): 'posts/group_list.html',
+                    kwargs={'slug': SLUG}): 'posts/group_list.html',
         }
         for reverse_name, template in templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
