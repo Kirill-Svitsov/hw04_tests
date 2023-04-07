@@ -151,7 +151,7 @@ class PostViewsTests(TestCase):
 
     def test_paginator_group_list_contains_two_records(self):
         response = self.client.get(
-            reverse('posts:group_list', kwargs={'slug': 'test_slug_second'})
+            reverse('posts:group_list', kwargs={'slug': SECOND_SLUG})
         )
         self.assertEqual(
             len(response.context['page_obj']),
