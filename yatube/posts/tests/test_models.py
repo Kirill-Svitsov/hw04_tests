@@ -1,8 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ..models import Group, Post, NUM_OF_WORDS
-from .test_views import TEXT_ONE, FIRST_TITLE, SLUG, DESCRIPTION, USER_ONE
+from ..models import NUM_OF_WORDS, Group, Post
+from .test_views import DESCRIPTION, FIRST_TITLE, SLUG, TEXT_ONE, USER_ONE
 
 User = get_user_model()
 

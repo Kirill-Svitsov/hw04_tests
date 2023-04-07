@@ -2,8 +2,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import PostForm
-from .models import Group, Post, User
+from .forms import PostForm, CommentForm
+from .models import Group, Post, User, Comment
 
 num_of_pub: int = 10
 
@@ -50,15 +50,19 @@ def profile(request, username):
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
+    comments = post.comments.order_by('created')
+    form = CommentForm(request.POST or None)
     context = {
         'post': post,
+        'form': form,
+        'comments': comments,
     }
     return render(request, 'posts/post_detail.html', context)
 
 
 @login_required
 def post_create(request):
-    form = PostForm(request.POST or None)
+    form = PostForm(request.POST or None, files=request.FILES or None,)
     if form.is_valid():
         create_post = form.save(commit=False)
         create_post.author = request.user
@@ -74,7 +78,11 @@ def post_edit(request, post_id):
     edit_post = get_object_or_404(Post, pk=post_id)
     if request.user != edit_post.author:
         return redirect('posts:post_detail', post_id)
-    form = PostForm(request.POST or None, instance=edit_post)
+    form = PostForm(
+        request.POST or None,
+        files=request.FILES or None,
+        instance=edit_post
+    )
     if form.is_valid():
         form.save()
         return redirect('posts:post_detail', post_id)
@@ -83,3 +91,15 @@ def post_edit(request, post_id):
         'is_edit': True,
     }
     return render(request, 'posts/create_post.html', context)
+
+
+@login_required
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    form = CommentForm(request.POST or None)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.author = request.user
+        comment.post = post
+        comment.save()
+    return redirect('posts:post_detail', post_id=post_id)
