@@ -36,6 +36,11 @@ class Post(models.Model):
         verbose_name='Группа',
         help_text='Выберите группу'
     )
+    image = models.ImageField(
+        'Картинка',
+        upload_to='posts/',
+        blank=True
+    )
 
     def __str__(self):
         return self.text[:NUM_OF_WORDS]
