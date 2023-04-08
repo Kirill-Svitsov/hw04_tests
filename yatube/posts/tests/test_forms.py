@@ -115,10 +115,48 @@ class PostCreateFormTests(TestCase):
                              reverse('posts:post_detail', args=(self.post.pk,))
                              )
         # Получаем для проверки объект поста из БД
-        post = Post.objects.get(pk=1)
+        post = Post.objects.get(pk=self.post.pk)
         # Проверяем автора
         self.assertEqual(post.author, self.post.author)
         # Проверяем изменился ли текст записи
         self.assertEqual(post.text, form_data['text'])
         # Проверяем сохранилась ли группа записи
         self.assertEqual(post.group.pk, form_data['group'])
+
+    def test_guest_client_create_comment(self):
+        """Создание комментария невозможно неавторизованному пользователю"""
+        post = Post.objects.get(pk=self.post.pk)
+        comments_count = post.comments.count()
+        form_data = {
+            'text': 'Тестовый комментарий'
+        }
+        response = self.client.post(
+            reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
+            data=form_data,
+            follow=False
+        )
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        self.assertEqual(post.comments.count(), comments_count)
+
+    def test_auth_client_create_comment(self):
+        """Авторизованный пользователь может оставить комментарий"""
+        post = Post.objects.get(pk=self.post.pk)
+        comments_count = post.comments.count()
+        # Заполняем форму для комментария
+        form_data = {'text': 'Текст комментария'}
+        response = self.authorized_client.post(
+            reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
+            data=form_data,
+            follow=False
+        )
+        # Проверяем редирект после отправки комментария
+        self.assertRedirects(
+            response,
+            reverse('posts:post_detail',
+                    kwargs={'post_id': self.post.pk})
+        )
+        # Проверяем, увеличилось ли число комментариев
+        self.assertEqual(
+            post.comments.count(),
+            comments_count + 1,
+        )
