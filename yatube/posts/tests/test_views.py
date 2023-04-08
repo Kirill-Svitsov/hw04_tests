@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+from django.core.cache import cache
 
 from ..models import Group, Post
 from ..views import num_of_pub
@@ -86,6 +87,7 @@ class PostViewsTests(TestCase):
 
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
+        cache.clear()
         templates_pages_names = {
             reverse('posts:index'): 'posts/index.html',
             reverse('posts:profile',
@@ -107,6 +109,7 @@ class PostViewsTests(TestCase):
 
     def test_post_create_page_show_correct_context(self):
         """Шаблон post_create сформирован с правильным контекстом."""
+        cache.clear()
         response = self.authorized_client.get(reverse('posts:post_create'))
         form_fields = {
             'text': forms.fields.CharField,
@@ -120,11 +123,13 @@ class PostViewsTests(TestCase):
 
     def test_index_page_show_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
+        cache.clear()
         response = self.authorized_client.get(reverse('posts:index'))
         self.assertIn('page_obj', response.context)
 
     def test_group_list_pages_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
+        cache.clear()
         response = self.authorized_client.get(
             reverse('posts:group_list', kwargs={'slug': self.group.slug})
         )
@@ -135,6 +140,7 @@ class PostViewsTests(TestCase):
 
     def test_profile_page_show_correct_context(self):
         """Шаблон profile сформирован с правильным контекстом."""
+        cache.clear()
         response = self.authorized_client.get(reverse(
             'posts:profile', kwargs={'username': USER_TWO}))
         first_post = response.context['page_obj'][0]
@@ -147,6 +153,7 @@ class PostViewsTests(TestCase):
 
     def test_post_detail_page_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
+        cache.clear()
         response = self.authorized_client.get(reverse(
             'posts:post_detail', kwargs={'post_id': self.post.pk}))
         first_post = response.context['post']
@@ -154,6 +161,7 @@ class PostViewsTests(TestCase):
 
     def test_post_edit_page_show_correct_context(self):
         """Шаблон post_edit сформирован с правильным контекстом."""
+        cache.clear()
         response = self.authorized_client.get(reverse(
             'posts:post_edit', args=(self.post.pk,)))
         form_fields = {
@@ -166,10 +174,14 @@ class PostViewsTests(TestCase):
                 self.assertIsInstance(form_field, expected)
 
     def test_paginator_first_page_contains_ten_records(self):
+        """Первая страница содержит 10 записей."""
+        cache.clear()
         response = self.client.get(reverse('posts:index'))
         self.assertEqual(len(response.context['page_obj']), num_of_pub)
 
     def test_paginator_second_page_contains_five_records(self):
+        """Вторая страница содержит 5 записей."""
+        cache.clear()
         response = self.client.get(reverse('posts:index') + '?page=2')
         self.assertEqual(
             len(response.context['page_obj']),
@@ -177,6 +189,8 @@ class PostViewsTests(TestCase):
         )
 
     def test_paginator_group_list_contains_two_records(self):
+        """Страница группы содержит 2 записи."""
+        cache.clear()
         response = self.client.get(
             reverse('posts:group_list', kwargs={'slug': SECOND_SLUG})
         )
@@ -186,6 +200,8 @@ class PostViewsTests(TestCase):
         )
 
     def test_paginator_profile_contains_two_records(self):
+        """Страница профиля содержит 2 записи."""
+        cache.clear()
         response = self.client.get(
             reverse('posts:profile', kwargs={'username': USER_TWO})
         )
@@ -193,3 +209,21 @@ class PostViewsTests(TestCase):
             len(response.context['page_obj']),
             POSTS_OF_SECOND_AUTHOR
         )
+
+    def test_index_page_cache(self):
+        """Тест cache на странице index."""
+        cache.clear()
+        response = self.authorized_client.get(reverse('posts:index'))
+        posts = response.content
+        Post.objects.create(
+            text=TEXT_TWO,
+            author=self.user,
+        )
+        response_cache_one = self.authorized_client.get(reverse('posts:index'))
+        posts_with_cache = response_cache_one.content
+        self.assertEqual(posts_with_cache, posts)
+        cache.clear()
+        response_without_cache = self.authorized_client.get(reverse('posts:index'))
+        new_posts = response_without_cache.content
+        self.assertNotEqual(posts_with_cache, new_posts)
+

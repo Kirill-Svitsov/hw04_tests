@@ -3,7 +3,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import PostForm, CommentForm
-from .models import Group, Post, User, Comment
+from .models import Group, Post, User
 
 num_of_pub: int = 10
 
@@ -62,7 +62,7 @@ def post_detail(request, post_id):
 
 @login_required
 def post_create(request):
-    form = PostForm(request.POST or None, files=request.FILES or None,)
+    form = PostForm(request.POST or None, files=request.FILES or None, )
     if form.is_valid():
         create_post = form.save(commit=False)
         create_post.author = request.user
