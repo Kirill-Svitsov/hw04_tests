@@ -9,7 +9,7 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.core.cache import cache
 
-from ..models import Group, Post
+from ..models import Group, Post, Follow
 from ..views import num_of_pub
 
 User = get_user_model()
@@ -37,7 +37,7 @@ class PostViewsTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username=USER_ONE)
-        cls.second_user = User.objects.create(username=USER_TWO)
+        cls.second_user = User.objects.create_user(username=USER_TWO)
         small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
@@ -226,4 +226,26 @@ class PostViewsTests(TestCase):
         response_without_cache = self.authorized_client.get(reverse('posts:index'))
         new_posts = response_without_cache.content
         self.assertNotEqual(posts_with_cache, new_posts)
+
+    def test_authorized_client_can_follow(self):
+        """Новая запись пользователя появляется в ленте тех, кто на него подписан"""
+        # Создаем подписку
+        Follow.objects.create(
+            user=self.second_user,
+            author=self.user,
+        )
+        # Получаем сраницу автора, на которого подписан
+        # self.authorized_client.force_login(self.second_user) - это и есть подписчик
+        response = self.authorized_client.get(
+            reverse('posts:follow_index')
+        )
+        # Считаем количество записей автора
+        posts_count = len(response.context)
+        # Создаем новый пост
+        Post.objects.create(
+            author=self.user,
+            text=TEXT_ONE,
+            group=self.group,
+        )
+        self.assertEqual(len(response.context), posts_count + 1)
 

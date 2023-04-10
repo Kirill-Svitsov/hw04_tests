@@ -78,3 +78,18 @@ class PostURLTests(TestCase):
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_authorized_client_can_follow(self):
+        """
+            Страница '/follow/',
+            доступна авторизованному пользователю.
+        """
+        url = '/follow/'
+        response = self.authorized_client.get(url)
+        second_response = self.client.get(url)
+        # Проверяем, что авторизованному пользователю доступна страница
+        # с подписками
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        # Проверяем, что не авторизованному пользователю при запросе
+        # страницы с подписками происходит редирект
+        self.assertEqual(second_response.status_code, HTTPStatus.FOUND)
