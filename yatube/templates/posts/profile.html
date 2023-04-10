@@ -8,12 +8,23 @@
       <div class="container py-5">
         <h1>Все посты пользователя {{ author.get_full_name }} </h1>
         <h3>Всего постов: <span>{{ author.posts.count }}</span></h3>
-        <a
-          class="btn btn-primary"
-          href="#"
-          role="button">
-          Все посты пользователя
-        </a>
+        {% if following != None %}
+          {% if following %}
+            <a
+              class="btn btn-lg btn-light"
+              href="{% url 'posts:profile_unfollow' author.username %}" role="button"
+            >
+              Отписаться
+            </a>
+          {% else %}
+            <a
+              class="btn btn-lg btn-primary"
+              href="{% url 'posts:profile_follow' author.username %}" role="button"
+            >
+              Подписаться
+            </a>
+          {% endif %}
+        {% endif %}
         <br>
         <br>
         {% for post in page_obj %}

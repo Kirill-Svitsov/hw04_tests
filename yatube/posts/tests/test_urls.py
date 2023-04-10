@@ -7,6 +7,7 @@ from ..models import Group, Post
 from .test_views import DESCRIPTION, FIRST_TITLE, SLUG, TEXT_ONE, USER_ONE
 
 User = get_user_model()
+unexisting_page = '/unexisting_page/'
 
 
 # python3 manage.py test posts.tests.test_urls для запуска локальных тестов
@@ -39,6 +40,7 @@ class PostURLTests(TestCase):
             f'/posts/{self.post.pk}/': 'posts/post_detail.html',
             f'/posts/{self.post.pk}/edit/': 'posts/create_post.html',
             '/create/': 'posts/create_post.html',
+            f'{unexisting_page}': 'core/404.html',
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):
@@ -47,7 +49,7 @@ class PostURLTests(TestCase):
 
     def test_about_url_exists_at_desired_location(self):
         """Проверка доступности адреса /unexisting_page/."""
-        response = self.client.get('/unexisting_page/')
+        response = self.client.get(unexisting_page)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
     def test_all_page_for_any_client_at_desired_location(self):

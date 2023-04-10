@@ -65,3 +65,18 @@ class Comment(models.Model):
                             help_text='Поделитесь своим мнением')
     created = models.TimeField(auto_now_add=True,
                                verbose_name='Время комментария')
+
+
+class Follow(models.Model):
+    user = models.ForeignKey(
+        User,
+        related_name='follower',
+        verbose_name='Подписчик',
+        on_delete=models.CASCADE
+    )
+    author = models.ForeignKey(
+        User,
+        related_name='following',
+        verbose_name='Блоггер',
+        on_delete=models.CASCADE
+    )
