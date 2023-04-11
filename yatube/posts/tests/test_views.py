@@ -227,25 +227,70 @@ class PostViewsTests(TestCase):
         new_posts = response_without_cache.content
         self.assertNotEqual(posts_with_cache, new_posts)
 
-    def test_authorized_client_can_follow(self):
-        """Новая запись пользователя появляется в ленте тех, кто на него подписан"""
-        # Создаем подписку
-        Follow.objects.create(
-            user=self.second_user,
-            author=self.user,
-        )
-        # Получаем сраницу автора, на которого подписан
-        # self.authorized_client.force_login(self.second_user) - это и есть подписчик
-        response = self.authorized_client.get(
-            reverse('posts:follow_index')
-        )
-        # Считаем количество записей автора
-        posts_count = len(response.context)
-        # Создаем новый пост
-        Post.objects.create(
-            author=self.user,
-            text=TEXT_ONE,
-            group=self.group,
-        )
-        self.assertEqual(len(response.context), posts_count + 1)
+    class FollowTests(TestCase):
+        @classmethod
+        def setUpClass(cls):
+            super().setUpClass()
 
+            cls.user = User.objects.create_user(username=USER_ONE)
+            cls.follower = User.objects.create_user(username=USER_TWO)
+            cls.group = Group.objects.create(
+                title=FIRST_TITLE,
+                slug=SLUG,
+            )
+            cls.post = Post.objects.create(
+                author=cls.user,
+                text=TEXT_ONE,
+                group=cls.group,
+            )
+
+        def setUp(self):
+            self.guest_client = Client()
+            self.authorized_client = Client()
+            self.auth_client_following = Client()
+            self.authorized_client.force_login(self.user)
+            self.client_auth_following.force_login(self.follower)
+
+        def test_follow_authorized_client(self):
+            """ Авторизованный пользователь может подписываться"""
+            self.auth_client_following.get(
+                reverse('posts:profile_follow',
+                        kwargs={'username': self.user.username})
+            )
+            self.assertEqual(Follow.objects.all().count(), 1)
+
+        def test_follow_guest(self):
+            """ не Авторизованный пользователь  не может подписываться"""
+            self.guest_client.get(
+                reverse('posts:profile_follow',
+                        kwargs={'username': self.user.username})
+            )
+            self.assertEqual(Follow.objects.all().count(), 0)
+
+        def test_unfollow(self):
+            """
+            Авторизованный пользователь может подписываться и отписаться от автора
+            """
+            self.auth_client_following.get(
+                reverse('posts:profile_follow',
+                        kwargs={'username': self.user.username})
+            )
+
+            self.auth_client_following.get(
+                reverse('posts:profile_unfollow',
+                        kwargs={'username': self.user.username})
+            )
+            self.assertEqual(Follow.objects.all().count(), 0)
+
+        def test_post_appears_subscribers(self):
+            """запись появляется в ленте подписчиков"""
+            response = self.auth_client_following.get(
+                reverse('posts:follow_index')
+            )
+            post = response.context['page_obj'][0].text
+            self.assertEqual(post, self.post.text)
+
+        def test_post_dont_appears(self):
+            """Запись не появляется у неподписанных пользователей"""
+            response = self.authorized_client.get(reverse('posts:follow_index'))
+            self.assertNotContains(response, self.post.text)

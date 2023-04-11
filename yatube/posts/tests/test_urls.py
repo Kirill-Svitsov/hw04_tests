@@ -3,7 +3,7 @@ from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 
-from ..models import Group, Post
+from ..models import Group, Post, Follow
 from .test_views import DESCRIPTION, FIRST_TITLE, SLUG, TEXT_ONE, USER_ONE
 
 User = get_user_model()
@@ -90,6 +90,8 @@ class PostURLTests(TestCase):
         # Проверяем, что авторизованному пользователю доступна страница
         # с подписками
         self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertTemplateUsed(response, 'posts/follow.html')
         # Проверяем, что не авторизованному пользователю при запросе
         # страницы с подписками происходит редирект
         self.assertEqual(second_response.status_code, HTTPStatus.FOUND)
+
